@@ -54,9 +54,9 @@ fn main() {
 
     let matches = app.get_matches();
 
-    if let Some(matches) = matches.subcommand_matches("deploy") {
-        deploy_command(matches);
-    } else if let Some(matches) = matches.subcommand_matches("postgres") {
-        postgres_command(matches);
+    match matches.subcommand() {
+        ("deploy", Some(matches)) => deploy_command(matches),
+        ("postgres", Some(matches)) => postgres_command(matches),
+        _ => unreachable!(),
     }
 }
