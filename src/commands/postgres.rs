@@ -3,7 +3,7 @@ use std::process::{self, Command};
 use clap::ArgMatches;
 use termion::{color, style};
 
-pub fn postgres_command(matches: &ArgMatches) {
+pub fn postgres_command(matches: &ArgMatches) -> Result<(), String> {
     let app = matches.value_of("app").unwrap();
     println!("Attaching to app {}...\n", app);
 
@@ -21,7 +21,7 @@ pub fn postgres_command(matches: &ArgMatches) {
         // TODO: actually fetch the correct URL
         .arg("postgres://haas@localhost:5432/haas")
         .status()
-        .expect("Error running psql");
+        .map_err(|_| String::from("Error running psql"))?;
 
     process::exit(status.code().unwrap_or(0))
 }

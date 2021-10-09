@@ -1,3 +1,5 @@
+use std::process;
+
 // (Full example with detailed comments in examples/01b_quick_example.rs)
 //
 // This example demonstrates clap's full 'builder pattern' style of creating arguments which is
@@ -6,7 +8,7 @@
 use clap::{App, AppSettings, Arg, SubCommand};
 use commands::postgres::postgres_command;
 
-use crate::commands::deploy::deploy_command;
+use crate::commands::{auth, deploy::deploy_command};
 
 mod commands;
 
@@ -50,13 +52,31 @@ fn main() {
                         .required(true)
                         .help("App to connect to"),
                 ),
+        )
+        .subcommand(
+            SubCommand::with_name("auth")
+                .about("Manage authentication")
+                .setting(AppSettings::SubcommandRequiredElseHelp)
+                .subcommand(SubCommand::with_name("login").about("Log in to HaaS")),
         );
 
     let matches = app.get_matches();
 
-    match matches.subcommand() {
+    let result: Result<(), String> = match matches.subcommand() {
         ("deploy", Some(matches)) => deploy_command(matches),
         ("postgres", Some(matches)) => postgres_command(matches),
+        ("auth", Some(matches)) => match matches.subcommand() {
+            ("login", Some(matches)) => auth::login_command(matches),
+            _ => unreachable!(),
+        },
         _ => unreachable!(),
+    };
+
+    match result {
+        Ok(_) => (),
+        Err(x) => {
+            println!("{}", x);
+            process::exit(1)
+        }
     }
 }
