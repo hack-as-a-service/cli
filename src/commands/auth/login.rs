@@ -63,11 +63,11 @@ Waiting for authorization...",
         if let Some(token) = resp.access_token {
             break Ok(token);
         } else if let Some(error) = resp.error {
-            if String::from("access_denied") == error {
+            if *"access_denied" == error {
                 break Err("User denied access.".to_string());
-            } else if String::from("expired_token") == error {
+            } else if *"expired_token" == error {
                 break Err("Your verification code has expired.".to_string());
-            } else if String::from("authorization_pending".to_string()) == error {
+            } else if *"authorization_pending" == error {
                 continue;
             } else {
                 break Err(format!("Something unexpected happened: {}", error));
