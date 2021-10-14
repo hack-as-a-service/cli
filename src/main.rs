@@ -1,16 +1,15 @@
-use std::process;
-
-// (Full example with detailed comments in examples/01b_quick_example.rs)
-//
-// This example demonstrates clap's full 'builder pattern' style of creating arguments which is
-// more verbose, but allows easier editing, and at times more advanced options, or the possibility
-// to generate arguments dynamically.
-use clap::{App, AppSettings, Arg, SubCommand};
-use commands::postgres::postgres_command;
-
-use crate::commands::{auth, deploy::deploy_command};
+#[macro_use]
+extern crate lazy_static;
 
 mod commands;
+mod credentials;
+mod models;
+mod utils;
+
+use clap::{App, AppSettings, Arg, SubCommand};
+use std::process;
+
+use commands::{auth, deploy::deploy_command, postgres::postgres_command};
 
 fn main() {
 	let app = App::new("Hack as a Service")
@@ -57,7 +56,12 @@ fn main() {
 			SubCommand::with_name("auth")
 				.about("Manage authentication")
 				.setting(AppSettings::SubcommandRequiredElseHelp)
-				.subcommand(SubCommand::with_name("login").about("Log in to HaaS")),
+				.subcommand(SubCommand::with_name("login").about("Log in to HaaS"))
+				.subcommand(
+					SubCommand::with_name("info")
+						.alias("test")
+						.about("Test authentication"),
+				),
 		);
 
 	let matches = app.get_matches();
@@ -67,6 +71,7 @@ fn main() {
 		("postgres", Some(matches)) => postgres_command(matches),
 		("auth", Some(matches)) => match matches.subcommand() {
 			("login", Some(matches)) => auth::login_command(matches),
+			("info", Some(matches)) => auth::info_command(matches),
 			_ => unreachable!(),
 		},
 		_ => unreachable!(),

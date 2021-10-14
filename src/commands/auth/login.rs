@@ -5,6 +5,8 @@ use reqwest::blocking as reqwest;
 use serde::Deserialize;
 use termion::style;
 
+use crate::{credentials, models::User, utils::stringify_err};
+
 const CLIENT_ID: &str = "3939eb821756a14eb1f6745d33dfdd80";
 
 #[derive(Deserialize)]
@@ -28,9 +30,9 @@ pub fn login_command(_matches: &ArgMatches) -> Result<(), String> {
 		.post("https://hackclub.app/api/oauth/device_authorization")
 		.form(&[("client_id", CLIENT_ID)])
 		.send()
-		.map_err(|e| format!("Something went wrong: {}", e.to_string()))?
+		.map_err(stringify_err)?
 		.json::<DeviceAuthorizationResponse>()
-		.map_err(|e| format!("Something went wrong: {}", e.to_string()))?;
+		.map_err(stringify_err)?;
 
 	println!(
 		"{faint}Copy your verification code:{reset} {} (🕐 expires in {} minutes)
@@ -56,9 +58,9 @@ Waiting for authorization...",
 				("grant_type", "urn:ietf:params:oauth:grant-type:device_code"),
 			])
 			.send()
-			.map_err(|e| format!("Something went wrong: {}", e.to_string()))?
+			.map_err(stringify_err)?
 			.json::<AccessTokenResponse>()
-			.map_err(|e| format!("Something went wrong: {}", e.to_string()))?;
+			.map_err(stringify_err)?;
 
 		if let Some(token) = resp.access_token {
 			break Ok(token);
@@ -75,7 +77,22 @@ Waiting for authorization...",
 		}
 	}?;
 
-	println!("\n✅ token: {}", token);
+	credentials::set(String::from("token"), &token)?;
+
+	let user = client
+		.get("https://hackclub.app/api/users/me")
+		.bearer_auth(&token)
+		.send()
+		.map_err(stringify_err)?
+		.json::<User>()
+		.map_err(stringify_err)?;
+
+	println!(
+		"\n✅ You've been logged in, {bold}{}{reset}!",
+		user.name,
+		bold = style::Bold,
+		reset = style::Reset
+	);
 
 	Ok(())
 }
