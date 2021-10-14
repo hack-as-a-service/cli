@@ -88,7 +88,7 @@ Waiting for authorization...",
 		.map_err(stringify_err)?;
 
 	println!(
-		"\n✅ You've been logged in, {bold}{}{reset}!",
+		"\n✅ You've been logged in as {bold}{}{reset}!",
 		user.name,
 		bold = style::Bold,
 		reset = style::Reset

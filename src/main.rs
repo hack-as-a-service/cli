@@ -9,7 +9,7 @@ mod utils;
 use clap::{App, AppSettings, Arg, SubCommand};
 use std::process;
 
-use commands::{auth, deploy::deploy_command, postgres::postgres_command};
+use commands::{apps, auth, deploy::deploy_command, postgres::postgres_command};
 
 fn main() {
 	let app = App::new("Hack as a Service")
@@ -62,6 +62,16 @@ fn main() {
 						.alias("test")
 						.about("Test authentication"),
 				),
+		)
+		.subcommand(
+			SubCommand::with_name("apps").about("Manage apps").arg(
+				Arg::with_name("team")
+					.takes_value(true)
+					.value_name("team")
+					.help("List apps for the given team")
+					.long("team")
+					.short("t"),
+			),
 		);
 
 	let matches = app.get_matches();
@@ -69,6 +79,7 @@ fn main() {
 	let result: Result<(), String> = match matches.subcommand() {
 		("deploy", Some(matches)) => deploy_command(matches),
 		("postgres", Some(matches)) => postgres_command(matches),
+		("apps", Some(matches)) => apps::apps_command(matches),
 		("auth", Some(matches)) => match matches.subcommand() {
 			("login", Some(matches)) => auth::login_command(matches),
 			("info", Some(matches)) => auth::info_command(matches),
