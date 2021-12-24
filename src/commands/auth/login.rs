@@ -27,7 +27,7 @@ pub fn login_command(_matches: &ArgMatches) -> Result<(), String> {
 	let client = reqwest::Client::new();
 
 	let resp = client
-		.post("https://hackclub.app/api/oauth/device_authorization")
+		.post("https://haas.hackclub.com/api/oauth/device_authorization")
 		.form(&[("client_id", CLIENT_ID)])
 		.send()
 		.map_err(stringify_err)?
@@ -51,7 +51,7 @@ Waiting for authorization...",
 		sleep(Duration::from_secs(1));
 
 		let resp = client
-			.post("https://hackclub.app/api/oauth/token")
+			.post("https://haas.hackclub.com/api/oauth/token")
 			.form(&[
 				("client_id", CLIENT_ID),
 				("device_code", &resp.device_code),
@@ -80,7 +80,7 @@ Waiting for authorization...",
 	credentials::set(String::from("token"), &token)?;
 
 	let user = client
-		.get("https://hackclub.app/api/users/me")
+		.get("https://haas.hackclub.com/api/users/me")
 		.bearer_auth(&token)
 		.send()
 		.map_err(stringify_err)?

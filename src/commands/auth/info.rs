@@ -15,7 +15,7 @@ pub fn info_command(_matches: &ArgMatches) -> Result<(), String> {
 	let client = reqwest::Client::new();
 
 	let user = client
-		.get("https://hackclub.app/api/users/me")
+		.get("https://haas.hackclub.com/api/users/me")
 		.bearer_auth(&token)
 		.send()
 		.map_err(stringify_err)?

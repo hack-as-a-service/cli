@@ -15,7 +15,7 @@ pub fn apps_command(matches: &ArgMatches) -> Result<(), String> {
 
 	let team = if let Some(team) = matches.value_of("team") {
 		client
-			.get(&format!("https://hackclub.app/api/teams/{}", team))
+			.get(&format!("https://haas.hackclub.com/api/teams/{}", team))
 			.bearer_auth(&token)
 			.send()
 			.map_err(stringify_err)?
@@ -36,7 +36,7 @@ pub fn apps_command(matches: &ArgMatches) -> Result<(), String> {
 			.map_err(stringify_err)?
 	} else {
 		let teams = client
-			.get("https://hackclub.app/api/users/me/teams")
+			.get("https://haas.hackclub.com/api/users/me/teams")
 			.bearer_auth(&token)
 			.send()
 			.map_err(stringify_err)?
@@ -50,7 +50,7 @@ pub fn apps_command(matches: &ArgMatches) -> Result<(), String> {
 
 	let apps = client
 		.get(&format!(
-			"https://hackclub.app/api/teams/{}/apps",
+			"https://haas.hackclub.com/api/teams/{}/apps",
 			team.slug
 		))
 		.bearer_auth(&token)
@@ -92,7 +92,7 @@ pub fn apps_command(matches: &ArgMatches) -> Result<(), String> {
 		};
 
 		println!(
-			"  {enabled} {0} {faint}(https://hackclub.app/apps/{0}){reset}",
+			"  {enabled} {0} {faint}(https://haas.hackclub.com/apps/{0}){reset}",
 			app.slug,
 			enabled = enabled,
 			faint = style::Faint,
