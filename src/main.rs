@@ -6,7 +6,7 @@ mod credentials;
 mod models;
 mod utils;
 
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg};
 use std::process;
 
 use commands::{apps, auth, deploy::deploy_command, postgres::postgres_command};
@@ -19,70 +19,66 @@ fn main() {
 		.about("CLI for Hack as a Service")
 		.setting(AppSettings::SubcommandRequiredElseHelp)
 		.subcommand(
-			SubCommand::with_name("deploy")
+			App::new("deploy")
 				.about("Deploy an app to HaaS")
 				.alias("d")
 				.arg(
-					Arg::with_name("app")
+					Arg::new("app")
 						.takes_value(true)
 						.value_name("app")
 						.long("app")
-						.short("a")
+						.short('a')
 						.required(true)
 						.help("App to deploy to"),
 				)
 				.arg(
-					Arg::with_name("detach")
-						.short("d")
+					Arg::new("detach")
+						.short('d')
 						.long("detach")
 						.help("Detach from the shell after starting deployment"),
 				),
 		)
 		.subcommand(
-			SubCommand::with_name("postgres")
+			App::new("postgres")
 				.alias("pg")
 				.about("Connect to an app's PostgreSQL database")
 				.arg(
-					Arg::with_name("app")
+					Arg::new("app")
 						.takes_value(true)
 						.value_name("app")
 						.long("app")
-						.short("a")
+						.short('a')
 						.required(true)
 						.help("App to connect to"),
 				),
 		)
 		.subcommand(
-			SubCommand::with_name("auth")
+			App::new("auth")
 				.about("Manage authentication")
 				.setting(AppSettings::SubcommandRequiredElseHelp)
-				.subcommand(SubCommand::with_name("login").about("Log in to HaaS"))
-				.subcommand(
-					SubCommand::with_name("info")
-						.alias("test")
-						.about("Test authentication"),
-				),
+				.subcommand(App::new("login").about("Log in to HaaS"))
+				.subcommand(App::new("info").alias("test").about("Test authentication")),
 		)
 		.subcommand(
-			SubCommand::with_name("apps").about("Manage apps").arg(
-				Arg::with_name("team")
+			App::new("apps").about("Manage apps").arg(
+				Arg::new("team")
 					.takes_value(true)
 					.value_name("team")
 					.help("List apps for the given team")
 					.long("team")
-					.short("t"),
+					.short('t'),
 			),
 		);
 
 	let matches = app.get_matches();
 
 	let result: Result<(), String> = match matches.subcommand() {
-		("deploy", Some(matches)) => deploy_command(matches),
-		("postgres", Some(matches)) => postgres_command(matches),
-		("apps", Some(matches)) => apps::apps_command(matches),
-		("auth", Some(matches)) => match matches.subcommand() {
-			("login", Some(matches)) => auth::login_command(matches),
-			("info", Some(matches)) => auth::info_command(matches),
+		Some(("deploy", matches)) => deploy_command(matches),
+		Some(("postgres", matches)) => postgres_command(matches),
+		Some(("apps", matches)) => apps::apps_command(matches),
+		Some(("auth", matches)) => match matches.subcommand() {
+			Some(("login", matches)) => auth::login_command(matches),
+			Some(("info", matches)) => auth::info_command(matches),
 			_ => unreachable!(),
 		},
 		_ => unreachable!(),
