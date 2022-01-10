@@ -1,4 +1,3 @@
-use clap::ArgMatches;
 use termion::style;
 
 use crate::{
@@ -9,7 +8,7 @@ use crate::{
 
 use reqwest::blocking as reqwest;
 
-pub fn info_command(_matches: &ArgMatches) -> Result<(), String> {
+pub fn info_command() -> Result<(), String> {
 	let token = get_token()?;
 
 	let client = reqwest::Client::new();

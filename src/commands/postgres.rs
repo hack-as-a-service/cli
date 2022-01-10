@@ -1,10 +1,8 @@
 use std::process::{self, Command};
 
-use clap::ArgMatches;
 use termion::{color, style};
 
-pub fn postgres_command(matches: &ArgMatches) -> Result<(), String> {
-	let app = matches.value_of("app").unwrap();
+pub fn postgres_command(app: String) -> Result<(), String> {
 	println!("Attaching to app {}...\n", app);
 
 	let status = Command::new("psql")

@@ -1,6 +1,5 @@
 use std::{thread::sleep, time::Duration};
 
-use clap::ArgMatches;
 use reqwest::blocking as reqwest;
 use serde::Deserialize;
 use termion::style;
@@ -23,7 +22,7 @@ struct AccessTokenResponse {
 	error: Option<String>,
 }
 
-pub fn login_command(_matches: &ArgMatches) -> Result<(), String> {
+pub fn login_command() -> Result<(), String> {
 	let client = reqwest::Client::new();
 
 	let resp = client

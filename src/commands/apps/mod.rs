@@ -1,4 +1,3 @@
-use clap::ArgMatches;
 use reqwest::blocking as reqwest;
 use termion::{color, style};
 
@@ -8,12 +7,12 @@ use crate::{
 	utils::{stringify_err, stringify_status_err},
 };
 
-pub fn apps_command(matches: &ArgMatches) -> Result<(), String> {
+pub fn apps_command(team_arg: Option<String>) -> Result<(), String> {
 	let token = get_token()?;
 
 	let client = reqwest::Client::new();
 
-	let team = if let Some(team) = matches.value_of("team") {
+	let team = if let Some(team) = team_arg {
 		client
 			.get(&format!("https://haas.hackclub.com/api/teams/{}", team))
 			.bearer_auth(&token)

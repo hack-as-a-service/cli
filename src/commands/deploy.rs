@@ -1,9 +1,5 @@
-use clap::ArgMatches;
-
-pub fn deploy_command(matches: &ArgMatches) -> Result<(), String> {
-	let app = matches.value_of("app").unwrap();
-
-	// ToDO: actually deploy
+pub fn deploy_command(app: String, _detach: bool) -> Result<(), String> {
+	// TODO: actually deploy
 	println!("Deploying {}...", app);
 
 	Ok(())

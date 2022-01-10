@@ -6,82 +6,73 @@ mod credentials;
 mod models;
 mod utils;
 
-use clap::{App, AppSettings, Arg};
+use clap::{Parser, Subcommand};
 use std::process;
 
-use commands::{apps, auth, deploy::deploy_command, postgres::postgres_command};
+use commands::{
+	apps,
+	auth::{self, AuthCommand},
+	deploy::deploy_command,
+	postgres::postgres_command,
+};
+
+#[derive(Parser, Debug)]
+#[clap(
+	name = "Hack as a Service",
+	author = "HaaS Development Team",
+	about = "CLI for Hack as a Service",
+	bin_name = "haas"
+)]
+struct Cli {
+	#[clap(subcommand)]
+	command: Command,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+	/// Manage apps
+	Apps {
+		/// List apps for the given team
+		#[clap(long, short)]
+		team: Option<String>,
+	},
+
+	/// Manage authentication
+	Auth {
+		#[clap(subcommand)]
+		command: AuthCommand,
+	},
+
+	/// Deploy an app to HaaS
+	Deploy {
+		/// App to deploy to
+		#[clap(long, short)]
+		app: String,
+
+		/// Detach from the shell after starting deployment
+		#[clap(long, short)]
+		detach: bool,
+	},
+
+	/// Connect to an app's PostgreSQL database
+	Postgres {
+		/// App to connect to
+		#[clap(long, short)]
+		app: String,
+	},
+}
 
 fn main() {
-	let app = App::new("Hack as a Service")
-		.bin_name("haas")
-		.version("1.0")
-		.author("HaaS Development Team (https://github.com/hack-as-a-service)")
-		.about("CLI for Hack as a Service")
-		.setting(AppSettings::SubcommandRequiredElseHelp)
-		.subcommand(
-			App::new("deploy")
-				.about("Deploy an app to HaaS")
-				.alias("d")
-				.arg(
-					Arg::new("app")
-						.takes_value(true)
-						.value_name("app")
-						.long("app")
-						.short('a')
-						.required(true)
-						.help("App to deploy to"),
-				)
-				.arg(
-					Arg::new("detach")
-						.short('d')
-						.long("detach")
-						.help("Detach from the shell after starting deployment"),
-				),
-		)
-		.subcommand(
-			App::new("postgres")
-				.alias("pg")
-				.about("Connect to an app's PostgreSQL database")
-				.arg(
-					Arg::new("app")
-						.takes_value(true)
-						.value_name("app")
-						.long("app")
-						.short('a')
-						.required(true)
-						.help("App to connect to"),
-				),
-		)
-		.subcommand(
-			App::new("auth")
-				.about("Manage authentication")
-				.setting(AppSettings::SubcommandRequiredElseHelp)
-				.subcommand(App::new("login").about("Log in to HaaS"))
-				.subcommand(App::new("info").alias("test").about("Test authentication")),
-		)
-		.subcommand(
-			App::new("apps").about("Manage apps").arg(
-				Arg::new("team")
-					.takes_value(true)
-					.value_name("team")
-					.help("List apps for the given team")
-					.long("team")
-					.short('t'),
-			),
-		);
+	let cli = Cli::parse();
 
-	let matches = app.get_matches();
-
-	let result: Result<(), String> = match matches.subcommand() {
-		Some(("deploy", matches)) => deploy_command(matches),
-		Some(("postgres", matches)) => postgres_command(matches),
-		Some(("apps", matches)) => apps::apps_command(matches),
-		Some(("auth", matches)) => match matches.subcommand() {
-			Some(("login", matches)) => auth::login_command(matches),
-			Some(("info", matches)) => auth::info_command(matches),
-			_ => unreachable!(),
+	let result = match cli.command {
+		Command::Apps { team } => apps::apps_command(team),
+		Command::Auth { command } => match command {
+			AuthCommand::Login {} => auth::login_command(),
+			AuthCommand::Info {} => auth::info_command(),
 		},
-		_ => unreachable!(),
+		Command::Deploy { app, detach } => deploy_command(app, detach),
+		Command::Postgres { app } => postgres_command(app),
 	};
 
 	match result {
